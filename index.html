@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarXZX</title>
+    <link rel="icon" href="https://res.cloudinary.com/cimx0knk/image/upload/f_auto,q_auto/logo_f-removebg-preview">
+    
+    <!-- Font Awesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            overflow-x: hidden;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #05070c;
+            padding: 20px 10px;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent 20%, rgba(0,0,0,.65) 100%);
+            z-index: -1;
+        }
+
+        /* Video Background */
+        .video-bg {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -3;
+        }
+
+        .video-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,.3), rgba(0,0,0,.65));
+            backdrop-filter: blur(5px);
+            z-index: -2;
+        }
+
+        /* Splash Screen (Tap Anywhere) */
+        #welcome {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(4, 8, 18, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 99999;
+            transition: opacity .7s, visibility .7s;
+            cursor: pointer;
+            padding: 20px;
+        }
+
+        #welcome.hidden-splash {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .welcome-card {
+            position: relative;
+            width: min(420px, 90vw);
+            padding: 40px 30px;
+            border-radius: 24px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .12);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, .5);
+            text-align: center;
+            animation: welcomeFloat 8s ease-in-out infinite;
+        }
+
+        .welcome-card::after {
+            content: "";
+            position: absolute;
+            top: -60%;
+            left: -45%;
+            width: 40%;
+            height: 220%;
+            transform: rotate(25deg);
+            background: linear-gradient(to right, transparent, rgba(255,255,255,.12), transparent);
+            animation: welcomeScanner 7s linear infinite;
+        }
+
+        .welcome-logo img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,.2));
+        }
+
+        .welcome-subtitle {
+            color: rgba(255,255,255,.7);
+            margin: 15px 0 28px;
+            letter-spacing: 1.5px;
+            font-size: 14px;
+        }
+
+        .welcome-tap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .welcome-tap span {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, .2);
+        }
+
+        .welcome-tap p {
+            font-size: 11px;
+            letter-spacing: 4px;
+            color: rgba(255, 255, 255, .6);
+            font-weight: 700;
+            animation: textPulse 2s infinite;
+        }
+
+        /* Main Container Card */
+        .main-card {
+            width: 100%;
+            max-width: 500px;
+            padding: 35px 28px;
+            border-radius: 28px;
+            background: rgba(15, 15, 20, .4);
+            border: 1px solid rgba(255, 255, 255, .09);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 20px 60px rgba(0,0,0,.5);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* Profile Header */
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .profile-avatar {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, .2);
+            box-shadow: 0 0 35px rgba(74, 144, 255, .6);
+            transition: transform .35s;
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.06);
+        }
+
+        .profile-title {
+            margin-top: 16px;
+            font-size: 40px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            filter: url(#crt-glitch);
+        }
+
+        .profile-bio {
+            margin-top: 6px;
+            color: rgba(255, 255, 255, .65);
+            font-size: 14px;
+            letter-spacing: .4px;
+        }
+
+        /* Social Icons */
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 18px 0 6px;
+        }
+
+        .social-icons a {
+            color: #fff;
+            font-size: 26px;
+            transition: transform .25s, color .25s;
+            text-decoration: none;
+        }
+
+        .social-icons a:hover {
+            transform: translateY(-4px);
+            color: #00f0ff;
+        }
+
+        /* Discord Presence Card */
+        .discord-card {
+            width: 100%;
+            margin: 18px 0;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-radius: 18px;
+            background: rgba(255,255,255,.03);
+            border: 1px solid rgba(255, 255, 255, .08);
+            backdrop-filter: blur(6px);
+            transition: .25s;
+        }
+
+        .discord-card:hover {
+            border-color: rgba(90, 140, 255, .3);
+            transform: translateY(-2px);
+        }
+
+        .discord-avatar-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .discord-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .discord-status-dot {
+            position: absolute;
+            right: 2px;
+            bottom: 2px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+            border: 2px solid #1a1a1f;
+            animation: dotPulse 2s infinite;
+        }
+
+        .discord-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .discord-name-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 2px;
+        }
+
+        .discord-name {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .badge-pro {
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #dc2626;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        .crown-icon {
+            color: #fbbf24;
+            font-size: 12px;
+            filter: drop-shadow(0 0 6px rgba(251, 191, 36, .7));
+        }
+
+        #activity-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            line-height: 1.2;
+            transition: opacity 0.3s;
+        }
+
+        #activity-sub {
+            margin-top: 2px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, .6);
+            line-height: 1.2;
+            transition: opacity 0.3s;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0 25px;
+            padding: 0 4px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: rgba(255, 255, 255, .75);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: default;
+        }
+
+        .stat-item i {
+            font-size: 13px;
+        }
+
+        .stat-item.live-signal i {
+            color: #22c55e;
+            animation: signalPulse 2s infinite;
+        }
+
+        /* Link Cards */
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .link-card {
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, .08);
+            transition: transform .3s, border-color .3s, background .3s, box-shadow .3s;
+        }
+
+        .link-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, .08);
+            border-color: rgba(70, 140, 255, .45);
+            box-shadow: 0 12px 35px rgba(37, 99, 235, .2);
+        }
+
+        .link-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .link-icon {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+            transition: transform .3s, filter .3s;
+        }
+
+        .link-card:hover .link-icon {
+            transform: scale(1.1);
+            filter: drop-shadow(0 0 10px rgba(70, 140, 255, .5));
+        }
+
+        .link-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .link-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .link-sub {
+            font-size: 11.5px;
+            color: rgba(255, 255, 255, .55);
+            transition: color .25s;
+            margin-top: 2px;
+        }
+
+        .link-card:hover .link-sub {
+            color: rgba(255, 255, 255, .85);
+        }
+
+        .arrow-icon {
+            color: rgba(255, 255, 255, .4);
+            font-size: 16px;
+            transition: transform .3s, color .3s;
+        }
+
+        .link-card:hover .arrow-icon {
+            color: #00f0ff;
+            transform: translate(3px, -3px) scale(1.1);
+        }
+
+        /* Glass Scanner for cards */
+        .link-card::after {
+            content: "";
+            position: absolute;
+            top: -40%;
+            left: -120%;
+            width: 80px;
+            height: 220%;
+            opacity: 0;
+            transform: rotate(24deg);
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,.04), rgba(255,255,255,.4), transparent);
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        .link-card.scanning::after {
+            animation: glassScanner 1.8s ease-in-out forwards;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            opacity: .6;
+        }
+
+        footer .divider {
+            width: 60px;
+            height: 1px;
+            margin: 0 auto 14px;
+            background: rgba(255, 255, 255, .15);
+        }
+
+        footer p {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        footer span {
+            display: block;
+            margin-top: 4px;
+            font-size: 11px;
+        }
+
+        /* Floating Music Button */
+        .music-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .1);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            font-size: 18px;
+            transition: transform .25s, background .25s;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, .2);
+        }
+
+        /* Keyframes */
+        @keyframes welcomeFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @keyframes welcomeScanner {
+            from { left: -45%; }
+            to { left: 145%; }
+        }
+
+        @keyframes textPulse {
+            0%, 100% { opacity: .45; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes dotPulse {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, .8); }
+            70% { box-shadow: 0 0 0 7px transparent; }
+            100% { box-shadow: 0 0 0 0 transparent; }
+        }
+
+        @keyframes signalPulse {
+            0%, 100% { transform: scale(1); opacity: .8; }
+            50% { transform: scale(1.15); opacity: 1; }
+        }
+
+        @keyframes glassScanner {
+            0% { left: -120%; opacity: 0; }
+            10% { opacity: .75; }
+            50% { opacity: 1; }
+            90% { opacity: .4; }
+            100% { left: 150%; opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+
+    <!-- SVG CRT Glitch Filter -->
+    <svg width="0" height="0" style="position:absolute">
+        <filter id="crt-glitch">
+            <feTurbulence type="fractalNoise" baseFrequency="0.001 0.12" numOctaves="2" seed="2" result="noise">
+                <animate attributeName="seed" values="2;60;120" dur="0.15s" begin="glitch.begin" fill="freeze"/>
+            </feTurbulence>
+            <feDisplacementMap id="disp" in="SourceGraphic" in2="noise" xChannelSelector="R" yChannelSelector="G" scale="0">
+                <animate id="glitch" attributeName="scale" values="0;14;0" dur="0.18s" begin="0s;glitch.end+4s" fill="freeze"/>
+            </feDisplacementMap>
+        </filter>
+    </svg>
+
+    <!-- Looping Background Video -->
+    <video class="video-bg" autoplay muted loop playsinline preload="metadata">
+        <source src="https://res.cloudinary.com/yigdelyy/video/upload/v1788839765/0908_v28bbw.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+
+    <!-- Main Biolink Card -->
+    <div class="main-card">
+        <!-- Header Profile -->
+        <div class="profile-header">
+            <img class="profile-avatar" src="https://res.cloudinary.com/cimx0knk/image/upload/f_auto,q_auto/logo_f-removebg-preview" alt="Far">
+            <h1 class="profile-title">FarXZX</h1>
+            <p class="profile-bio">Man plans, God decides.</p>
+            
+            <div class="social-icons">
+                <a href="https://www.tiktok.com/@farturu" target="_blank"><i class="fa-brands fa-tiktok"></i></a>
+                <a href="https://www.youtube.com/@farrrxzx" target="_blank"><i class="fa-brands fa-youtube"></i></a>
+                <a href="https://discord.com/users/711464365416644628" target="_blank"><i class="fa-brands fa-discord"></i></a>
+            </div>
+        </div>
+
+        <!-- Discord RPC Presence Widget -->
+        <div class="discord-card">
+            <div class="discord-avatar-wrap">
+                <img class="discord-avatar" src="https://res.cloudinary.com/yigdelyy/image/upload/v1785434207/9bd4336959cbdfdca6b2611f7db9bce7_ctd5qk.gif" alt="Discord Avatar">
+                <span class="discord-status-dot"></span>
+            </div>
+            <div class="discord-info">
+                <div class="discord-name-row">
+                    <span class="discord-name">farturu</span>
+                    <span class="badge-pro">PRO+</span>
+                    <span class="crown-icon">👑</span>
+                </div>
+                <span id="activity-title">Playing SA:MP</span>
+                <span id="activity-sub">Community & Gaming Hub</span>
+            </div>
+        </div>
+
+        <!-- Real-time Stats -->
+        <div class="stats-row">
+            <div class="stat-item"><i class="fa-solid fa-users"></i> <span>137</span></div>
+            <div class="stat-item" style="cursor: pointer;" onclick="addLike(this)"><i class="fa-solid fa-heart" style="color:#f43f5e;"></i> <span id="like-count">343</span></div>
+            <div class="stat-item live-signal"><i class="fa-solid fa-signal"></i> <span id="online-count">986</span></div>
+        </div>
+
+        <!-- Link Cards (Tanpa Kategori Modpack) -->
+        <div class="links-container">
+            <!-- 1. Discord Community -->
+            <a href="https://discord.gg/8pFccN9yYt" class="link-card" target="_blank">
+                <div class="link-left">
+                    <img class="link-icon" src="https://res.cloudinary.com/cimx0knk/image/upload/f_auto,q_auto/logo_f-removebg-preview" alt="Discord">
+                    <div class="link-text">
+                        <span class="link-title">Far Lounge</span>
+                        <span class="link-sub">(Official Discord Community)</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square arrow-icon"></i>
+            </a>
+
+            <!-- 2. Sociabuzz -->
+            <a href="_" class="link-card" target="_blank">
+                <div class="link-left">
+                    <img class="link-icon" src="https://res.cloudinary.com/yigdelyy/image/upload/v1785390905/images-removebg-preview_u4daau.png" alt="Sociabuzz">
+                    <div class="link-text">
+                        <span class="link-title">Sociabuzz</span>
+                        
+                    </div>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square arrow-icon"></i>
+            </a>
+
+            <!-- 3. Contact Me -->
+            <a href="https://discord.com/users/711464365416644628" class="link-card" target="_blank">
+                <div class="link-left">
+                    <img class="link-icon" src="https://res.cloudinary.com/yigdelyy/image/upload/v1786622032/clipart1909658_bopipk.png" alt="
+
+                
